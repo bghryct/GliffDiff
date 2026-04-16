@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Type Proof Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Spline+Sans+Mono:wght@300..700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08080a;
+  --surface: #111114;
+  --surface-2: #19191d;
+  --surface-3: #222228;
+  --border: #2a2a32;
+  --border-hover: #3a3a44;
+  --accent: #c8956c;
+  --accent-dim: #c8956c33;
+  --accent-hover: #d9a67d;
+  --text: #d8d8dc;
+  --text-dim: #78787e;
+  --text-muted: #55555c;
+  --red: #c86c6c;
+  --green: #6cc88e;
+  --blue: #6c8ec8;
+  --mono: 'Spline Sans Mono', monospace;
+  --serif: 'Newsreader', serif;
+  --radius: 6px;
+  --radius-lg: 10px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--mono);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow: hidden;
+  height: 100vh;
+}
+
+::selection { background: var(--accent); color: var(--bg); }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+/* ─── HEADER ─── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 48px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-mark {
+  width: 24px; height: 24px;
+  background: var(--accent);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; color: var(--bg);
+}
+
+.logo-text {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.logo-sub {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 1px solid var(--border);
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ─── TABS ─── */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  padding: 0 20px;
+  flex-shrink: 0;
+}
+
+.tab {
+  padding: 10px 18px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.tab:hover { color: var(--text); }
+
+.tab.active {
+  color: var(--accent);
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+}
+
+/* ─── LAYOUT ─── */
+.app-layout {
+  display: flex;
+  height: calc(100vh - 48px - 38px);
+}
+
+.sidebar {
+  width: 280px;
+  min-width: 280px;
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  background: var(--bg);
+}
+
+/* ─── SIDEBAR SECTIONS ─── */
+.sidebar-section {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-section:last-child { border-bottom: none; }
+
+.section-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.font-loader {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.font-loader:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.font-loader input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.font-loader-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.font-loader-label .icon {
+  font-size: 18px;
+  opacity: 0.5;
+}
+
+.font-loaded {
+  border-color: var(--accent);
+  border-style: solid;
+  background: var(--accent-dim);
+}
+
+.font-loaded .font-loader-label { color: var(--accent); }
+
+.font-name-display {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: 2px;
+  word-break: break-all;
+}
+
+/* ─── CONTROLS ─── */
+.control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.control-row:last-child { margin-bottom: 0; }
+
+.control-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  min-width: 60px;
+}
+
+.control-value {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 500;
+  width: 48px;
+  text-align: right;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  padding: 2px 4px;
+  outline: none;
+  cursor: text;
+  transition: all 0.15s;
+  -moz-appearance: textfield;
+}
+
+.control-value::-webkit-inner-spin-button,
+.control-value::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.control-value:hover {
+  border-color: var(--border);
+  background: var(--surface-2);
+}
+
+.control-value:focus {
+  border-color: var(--accent);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 8px;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: var(--accent-hover);
+  transform: scale(1.1);
+}
+
+select {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 8px;
+  width: 100%;
+  cursor: pointer;
+  outline: none;
+}
+
+select:focus { border-color: var(--accent); }
+
+.btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+
+.btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.btn-accent:hover {
+  background: var(--accent-hover);
+  color: var(--bg);
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 10px;
+}
+
+/* ─── COLOR PICKER ─── */
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.color-swatch {
+  width: 28px; height: 28px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.color-swatch input[type="color"] {
+  position: absolute;
+  inset: -4px;
+  width: calc(100% + 8px);
+  height: calc(100% + 8px);
+  border: none;
+  cursor: pointer;
+}
+
+/* ─── PROOF AREA ─── */
+.proof-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  min-height: 400px;
+}
+
+.proof-pane {
+  background: white;
+  padding: 32px;
+  min-height: 400px;
+}
+
+.proof-pane.dark-bg {
+  background: var(--bg);
+}
+
+.proof-pane-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.proof-pane.dark-bg .proof-pane-label {
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+
+.proof-text {
+  color: #111;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.proof-pane.dark-bg .proof-text {
+  color: var(--text);
+}
+
+/* ─── EDITABLE PROOF AREAS ─── */
+[data-proof-editable] {
+  cursor: text;
+  border-radius: 3px;
+  transition: box-shadow 0.15s;
+  outline: none;
+}
+
+[data-proof-editable]:hover {
+  box-shadow: inset 0 0 0 1px #d0d0d020;
+}
+
+[data-proof-editable]:focus {
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+
+[data-proof-editable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* ─── CHARACTER GRID ─── */
+.char-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.char-cell {
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  min-height: 68px;
+  cursor: default;
+  transition: background 0.15s;
+  position: relative;
+}
+
+.char-cell:hover { background: #f8f6f4; }
+
+.char-glyph {
+  font-size: 28px;
+  color: #111;
+  line-height: 1.2;
+}
+
+.char-glyph-ref {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.char-cell:hover .char-glyph-ref {
+  opacity: 0.3;
+}
+
+.char-code {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: #aaa;
+  margin-top: 4px;
+}
+
+.char-section-header {
+  grid-column: 1 / -1;
+  background: var(--surface-2);
+  padding: 10px 16px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* ─── OVERLAY ─── */
+.overlay-container {
+  position: relative;
+  background: white;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  padding: 40px;
+  min-height: 500px;
+}
+
+.overlay-layer {
+  position: absolute;
+  inset: 0;
+  padding: 40px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.overlay-layer-ref {
+  z-index: 1;
+}
+
+.overlay-layer-test {
+  z-index: 2;
+}
+
+.overlay-static {
+  position: relative;
+  z-index: 0;
+  visibility: hidden;
+  word-wrap: break-word;
+}
+
+/* ─── WATERFALL ─── */
+.waterfall-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  margin-bottom: 1px;
+}
+
+.waterfall-row:first-child {
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  overflow: hidden;
+}
+
+.waterfall-row:last-child {
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  overflow: hidden;
+}
+
+.waterfall-size {
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  padding: 12px 8px;
+}
+
+.waterfall-cell {
+  background: white;
+  padding: 12px 20px;
+  color: #111;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ─── SPACING / KERNING ─── */
+.kern-pair-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.kern-pair-cell {
+  background: white;
+  text-align: center;
+  padding: 14px 8px;
+}
+
+.kern-pair-text {
+  font-size: 32px;
+  color: #111;
+  line-height: 1;
+}
+
+.kern-pair-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: #aaa;
+  margin-top: 6px;
+}
+
+/* ─── METRICS VIEW ─── */
+.metrics-canvas-wrap {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  text-align: center;
+  overflow: hidden;
+}
+
+/* ─── TEXTAREA ─── */
+.custom-text-area {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px;
+  resize: vertical;
+  min-height: 60px;
+  outline: none;
+}
+
+.custom-text-area:focus { border-color: var(--accent); }
+
+/* ─── TOGGLE ─── */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.toggle {
+  width: 36px; height: 20px;
+  background: var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  border: none;
+}
+
+.toggle.active { background: var(--accent); }
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 14px; height: 14px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle.active::after { transform: translateX(16px); }
+
+/* ─── PROOF BACKGROUND TOGGLE ─── */
+.bg-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.bg-toggle button {
+  flex: 1;
+  padding: 5px 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.bg-toggle button.active {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* ─── PRINT / PDF ─── */
+@media print {
+  @page {
+    size: 17in 11in landscape;
+    margin: 0.5in;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+  
+  .header, .tabs, .sidebar, .no-print {
+    display: none !important;
+  }
+  
+  .app-layout {
+    display: block !important;
+    height: auto !important;
+  }
+  
+  .main-content {
+    overflow: visible !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+  
+  .print-header {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #111;
+    font-family: 'Spline Sans Mono', monospace;
+  }
+  
+  .print-header h1 {
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  
+  .print-header .print-meta {
+    font-size: 10px;
+    color: #666;
+  }
+  
+  .proof-split {
+    border: 1px solid #ccc !important;
+    break-inside: avoid;
+  }
+  
+  .proof-pane { background: white !important; }
+  .proof-text { color: #111 !important; }
+  .proof-pane-label { color: #666 !important; border-color: #ccc !important; }
+  
+  .overlay-container { border: 1px solid #ccc !important; }
+  .waterfall-row { break-inside: avoid; }
+  
+  .char-grid { border: 1px solid #ccc !important; }
+  .char-cell { background: white !important; }
+  .char-glyph { color: #111 !important; }
+}
+
+.print-header { display: none; }
+
+/* ─── EMPTY STATE ─── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: var(--text-muted);
+  text-align: center;
+  gap: 12px;
+}
+
+.empty-state .empty-icon {
+  font-size: 48px;
+  opacity: 0.3;
+}
+
+.empty-state p {
+  font-size: 12px;
+  max-width: 300px;
+  line-height: 1.7;
+}
+
+.empty-state .hint {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in { animation: fadeIn 0.3s ease-out; }
+
+/* ─── VIEW HEADER ─── */
+.view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.view-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text);
+}
+
+.view-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ─── DIFF HIGHLIGHT ─── */
+.diff-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-left: 6px;
+}
+
+.diff-match { background: #6cc88e22; color: var(--green); }
+.diff-mismatch { background: #c86c6c22; color: var(--red); }
+
+/* ─── QUICK PRESETS ─── */
+.preset-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.preset-chip {
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: var(--surface-3);
+  color: var(--text-dim);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.preset-chip:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.preset-chip.active {
+  background: var(--accent);
+  color: var(--bg);
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-mark">Tp</div>
+    <span class="logo-text">Type Proof Studio</span>
+    <span class="logo-sub">Metrics-Compatible Proofing</span>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-sm" onclick="toggleDarkProof()">◐ Proof BG</button>
+    <button class="btn btn-sm btn-accent" onclick="exportPDF()">⬡ Export PDF</button>
+  </div>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" data-tab="paragraph">Paragraph</button>
+  <button class="tab" data-tab="characters">Characters</button>
+  <button class="tab" data-tab="overlay">Overlay</button>
+  <button class="tab" data-tab="waterfall">Waterfall</button>
+  <button class="tab" data-tab="spacing">Spacing</button>
+  <button class="tab" data-tab="metrics">Metrics</button>
+</div>
+
+<div class="app-layout">
+  <div class="sidebar" id="sidebar">
+    <!-- FONT LOADERS -->
+    <div class="sidebar-section">
+      <div class="section-label">Reference Font</div>
+      <div class="font-loader" id="refLoader">
+        <input type="file" accept=".otf,.ttf,.woff,.woff2" onchange="loadFont(event, 'ref')">
+        <div class="font-loader-label">
+          <span class="icon">↑</span>
+          <span>Drop or click to load</span>
+        </div>
+      </div>
+      <div class="font-name-display" id="refName" style="margin-top:6px"></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">Test Font</div>
+      <div class="font-loader" id="testLoader">
+        <input type="file" accept=".otf,.ttf,.woff,.woff2" onchange="loadFont(event, 'test')">
+        <div class="font-loader-label">
+          <span class="icon">↑</span>
+          <span>Drop or click to load</span>
+        </div>
+      </div>
+      <div class="font-name-display" id="testName" style="margin-top:6px"></div>
+    </div>
+
+    <!-- SIZE CONTROLS -->
+    <div class="sidebar-section">
+      <div class="section-label">Typography</div>
+      <div class="control-row">
+        <span class="control-label">Size</span>
+        <input type="range" id="fontSize" min="6" max="120" value="18" oninput="syncFromSlider('fontSize')">
+        <input type="text" class="control-value" id="fontSizeVal" value="18px"
+          onfocus="editStart(this,'fontSize','px')"
+          onblur="editCommit(this,'fontSize','px',6,120)"
+          onkeydown="editKey(event,this,'fontSize','px',6,120)">
+      </div>
+      <div class="control-row">
+        <span class="control-label">Leading</span>
+        <input type="range" id="lineHeight" min="80" max="250" value="140" oninput="syncFromSlider('lineHeight')">
+        <input type="text" class="control-value" id="lineHeightVal" value="1.40"
+          onfocus="editStart(this,'lineHeight','')"
+          onblur="editCommit(this,'lineHeight','',0.8,2.5)"
+          onkeydown="editKey(event,this,'lineHeight','',0.8,2.5)">
+      </div>
+      <div class="control-row">
+        <span class="control-label">Tracking</span>
+        <input type="range" id="letterSpacing" min="-100" max="200" value="0" oninput="syncFromSlider('letterSpacing')">
+        <input type="text" class="control-value" id="letterSpacingVal" value="0"
+          onfocus="editStart(this,'letterSpacing','')"
+          onblur="editCommit(this,'letterSpacing','',-100,200)"
+          onkeydown="editKey(event,this,'letterSpacing','',-100,200)">
+      </div>
+    </div>
+
+    <!-- OVERLAY CONTROLS (shown conditionally) -->
+    <div class="sidebar-section" id="overlayControls" style="display:none">
+      <div class="section-label">Overlay Settings</div>
+      <div class="color-row">
+        <div class="color-swatch" id="refColorSwatch" style="background:#2563eb">
+          <input type="color" id="refColor" value="#2563eb" oninput="updateOverlayColors()">
+        </div>
+        <span class="control-label" style="flex:1">Reference</span>
+        <input type="range" id="refOpacity" min="0" max="100" value="50" style="width:80px" oninput="syncFromSlider('refOpacity')">
+        <input type="text" class="control-value" id="refOpacityVal" value="50%" style="width:42px"
+          onfocus="editStart(this,'refOpacity','%')"
+          onblur="editCommit(this,'refOpacity','%',0,100)"
+          onkeydown="editKey(event,this,'refOpacity','%',0,100)">
+      </div>
+      <div class="color-row">
+        <div class="color-swatch" id="testColorSwatch" style="background:#dc2626">
+          <input type="color" id="testColor" value="#dc2626" oninput="updateOverlayColors()">
+        </div>
+        <span class="control-label" style="flex:1">Test</span>
+        <input type="range" id="testOpacity" min="0" max="100" value="50" style="width:80px" oninput="syncFromSlider('testOpacity')">
+        <input type="text" class="control-value" id="testOpacityVal" value="50%" style="width:42px"
+          onfocus="editStart(this,'testOpacity','%')"
+          onblur="editCommit(this,'testOpacity','%',0,100)"
+          onkeydown="editKey(event,this,'testOpacity','%',0,100)">
+      </div>
+      <div class="toggle-row" style="margin-top:8px">
+        <span class="control-label">Difference blend</span>
+        <button class="toggle" id="diffToggle" onclick="toggleDiff()"></button>
+      </div>
+    </div>
+
+    <!-- SAMPLE TEXT -->
+    <div class="sidebar-section">
+      <div class="section-label">Sample Text</div>
+      <select id="sampleSelect" onchange="changeSample()">
+        <option value="pangram">Pangrams</option>
+        <option value="lorem">Lorem Ipsum</option>
+        <option value="kerning">Kerning Strings</option>
+        <option value="spacing">Spacing Tests</option>
+        <option value="hinting">Hinting Test</option>
+        <option value="custom">Custom Text</option>
+      </select>
+      <textarea class="custom-text-area" id="customText" style="display:none;margin-top:8px" 
+        placeholder="Type your proofing text here..." oninput="updateProof()"></textarea>
+      <div class="preset-chips" id="presetChips">
+        <button class="preset-chip active" data-sample="pangram" onclick="quickPreset(this)">Pangram</button>
+        <button class="preset-chip" data-sample="caps" onclick="quickPreset(this)">ALL CAPS</button>
+        <button class="preset-chip" data-sample="numbers" onclick="quickPreset(this)">Numbers</button>
+        <button class="preset-chip" data-sample="symbols" onclick="quickPreset(this)">Symbols</button>
+      </div>
+    </div>
+
+    <!-- OT FEATURES -->
+    <div class="sidebar-section">
+      <div class="section-label">OpenType Features</div>
+      <div class="toggle-row">
+        <span class="control-label">Ligatures</span>
+        <button class="toggle active" id="ligaToggle" onclick="toggleOT('liga')"></button>
+      </div>
+      <div class="toggle-row">
+        <span class="control-label">Kerning</span>
+        <button class="toggle active" id="kernToggle" onclick="toggleOT('kern')"></button>
+      </div>
+      <div class="toggle-row">
+        <span class="control-label">Old-style nums</span>
+        <button class="toggle" id="onumToggle" onclick="toggleOT('onum')"></button>
+      </div>
+      <div class="toggle-row">
+        <span class="control-label">Tabular nums</span>
+        <button class="toggle" id="tnumToggle" onclick="toggleOT('tnum')"></button>
+      </div>
+      <div class="toggle-row">
+        <span class="control-label">Small caps</span>
+        <button class="toggle" id="smcpToggle" onclick="toggleOT('smcp')"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content" id="mainContent">
+    <div class="print-header">
+      <div>
+        <h1>Type Proof Studio</h1>
+        <div class="print-meta" id="printMeta"></div>
+      </div>
+      <div class="print-meta" id="printDate"></div>
+    </div>
+    <div id="viewContainer"></div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───
+const state = {
+  tab: 'paragraph',
+  refFont: null,
+  testFont: null,
+  refFontName: '',
+  testFontName: '',
+  fontSize: 18,
+  lineHeight: 1.4,
+  letterSpacing: 0,
+  refColor: '#2563eb',
+  testColor: '#dc2626',
+  refOpacity: 50,
+  testOpacity: 50,
+  diffBlend: false,
+  darkProof: false,
+  otFeatures: { liga: true, kern: true, onum: false, tnum: false, smcp: false },
+  sampleType: 'pangram',
+  customText: '',
+  waterfallText: 'Hamburgefonstiv 0123456789',
+};
+
+const SAMPLES = {
+  pangram: `The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump! The five boxing wizards jump quickly. Sphinx of black quartz, judge my vow. Two driven jocks help fax my big quiz. The jay, pig, fox, zebra and my wolves quack! Crazy Frederick bought many very exquisite opal jewels.
+
+THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG. PACK MY BOX WITH FIVE DOZEN LIQUOR JUGS. HOW VEXINGLY QUICK DAFT ZEBRAS JUMP!
+
+0123456789 ({[<¡!¿?>]}) @#$%^&*+=~ «»‹› ""'' ¶§†‡ ©®™ £€¥¢ ×÷±≈≠≤≥ ¼½¾⅓⅔
+
+The quick brown fox jumps over the lazy dog. Cwm fjord bank glyphs vext quiz. Jived fox nymph grabs quick waltz. Glib jocks quiz nymph to vex dwarf.`,
+  
+  lorem: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. Etiam tempor. Ut ullamcorper, ligula ut dictum pharetra, nisi nunc fringilla magna, in commodo elit erat nec turpis. Ut pharetra augue nec augue. Nam elit magna, hendrerit sit amet, tincidunt ac, viverra sed, nulla.
+
+Donec porta diam eu massa. Quisque diam lorem, interdum vitae, dapibus ac, scelerisque vitae, pede. Donec eget tellus non erat lacinia fermentum. Donec in velit vel ipsum auctor pulvinar. Vestibulum iaculis lacinia est. Proin dictum elementum velit. Fusce euismod consequat ante. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.`,
+  
+  kerning: `AVATAWAYLTLYTATYTOWAVE
+Va Vo To Ta Te Ty Tw Tr Tu Aw Ay Av At Ac Ae
+FA PA TA VA WA YA LT LY OA OC OD OE
+fi fl ff ffi ffl ft fb fh fj fk
+rn rm rv ry rd rt rg rp
+"T" "Y" "W" "V" 'T' 'Y' 'W' 'V'
+f) f] j) j] (f [f (j [j
+7. 7, 4. 1, T. T, Y. Y,
+
+HANDGLOVES
+Hamburgefontsiv
+Rag bag age gag gauge ogee edge
+
+11 17 14 41 71 74 47 77 44 10 01 70 07 40 04`,
+  
+  spacing: `HHHHoooonnnn
+HHOHHOHHOHHO
+nnonnonnonno
+iiillll!!!!????
+mmmmwwww
+iHiHiHiHiHi
+lolololololol
+dddqqqbbbppp
+ftftftftftft
+
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+abcdefghijklmnopqrstuvwxyz`,
+  
+  hinting: `aeonrstudbhklm aeginsrto
+iiiiilllll11111
+Il1| Il1| Il1| Il1|
+0Oo 0Oo 0Oo 0Oo
+rn m rn m rn m
+cl d cl d cl d
+vv w vv w vv w
+ce  ce  ce  ce
+S568 S568 S568
+
+Body text at a typical reading size. The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. Sphinx of black quartz, judge my vow. How vexingly quick daft zebras jump! Two driven jocks help fax my big quiz.`,
+
+  caps: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG',
+  numbers: '0123456789 £€¥¢ $1,234,567.89 0% 1⁄2 ¼ ½ ¾ ⅓ ⅔ ⅛ ⅜ ⅝ ⅞ H0H H1H H2H H3H H4H H5H H6H H7H H8H H9H',
+  symbols: '({[<\u00A1!\u00BF?>]}) @#$%^&*+=~ \u00AB\u00BB\u2039\u203A \u201C\u201D\u2018\u2019 \u00B6\u00A7\u2020\u2021 \u00A9\u00AE\u2122 \u00D7\u00F7\u00B1\u2248\u2260\u2264\u2265 \u2192\u2190\u2191\u2193 \u2022\u00B7\u2023 \u2014\u2013- \u2026',
+};
+
+const CHAR_RANGES = [
+  { label: 'Uppercase', start: 65, end: 90 },
+  { label: 'Lowercase', start: 97, end: 122 },
+  { label: 'Figures', start: 48, end: 57 },
+  { label: 'Punctuation & Symbols', chars: '!@#$%^&*()_+-=[]{}|;:\'",.<>?/`~¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿' },
+  { label: 'Latin Extended', chars: 'ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ' },
+  { label: 'Latin Extended Additional', chars: 'ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽž' },
+];
+
+const KERN_PAIRS = [
+  'AV','AW','AY','AT','AC','AG','AO','AQ','AU',
+  'FA','FO','Fe','Fo','LT','LV','LW','LY',
+  'PA','Pe','Po','RA','RV','RW','RY',
+  'TA','TO','Ta','Te','To','Tr','Tu','Tw','Ty',
+  'VA','VO','Va','Ve','Vo','Vr','Vu','Vy',
+  'WA','WO','Wa','We','Wo',
+  'YA','YO','Ya','Ye','Yo','Yu',
+  'av','aw','ay','ey','ov','ow','oy',
+  'fi','fl','ff','fb','fh','fk',
+  'rn','rv','ry','rd','rt',
+  'T.','T,','Y.','Y,','V.','V,','W.','W,',
+  '7.','7,','4.','1,',
+  '"T','"V','"W','"Y',
+];
+
+const WATERFALL_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 42, 48, 60, 72, 96];
+
+// ─── FONT LOADING ───
+function loadFont(event, type) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const buffer = e.target.result;
+    const fontName = type === 'ref' ? 'ProofRef' : 'ProofTest';
+    const face = new FontFace(fontName, buffer);
+
+    face.load().then(loaded => {
+      // Remove any previous version of this font face
+      document.fonts.forEach(f => { if (f.family === fontName) document.fonts.delete(f); });
+      document.fonts.add(loaded);
+      if (type === 'ref') {
+        state.refFont = fontName;
+        state.refFontName = file.name;
+        document.getElementById('refLoader').classList.add('font-loaded');
+        document.getElementById('refName').textContent = file.name;
+      } else {
+        state.testFont = fontName;
+        state.testFontName = file.name;
+        document.getElementById('testLoader').classList.add('font-loaded');
+        document.getElementById('testName').textContent = file.name;
+      }
+      updateProof();
+    }).catch(err => {
+      console.error('Font load error:', err);
+      alert('Error loading font file. Ensure it is a valid .otf, .ttf, .woff, or .woff2 file.');
+    });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ─── CONTROLS ───
+// Mapping: slider id -> { state key, display suffix, toState fn, toSlider fn, toDisplay fn }
+const CONTROL_MAP = {
+  fontSize:       { key: 'fontSize',       suffix: 'px', toState: v => parseInt(v),      toSlider: s => s,          toDisplay: s => s + 'px' },
+  lineHeight:     { key: 'lineHeight',     suffix: '',   toState: v => parseFloat(v),     toSlider: s => Math.round(s * 100), toDisplay: s => s.toFixed(2) },
+  letterSpacing:  { key: 'letterSpacing',  suffix: '',   toState: v => parseInt(v),       toSlider: s => s,          toDisplay: s => String(s) },
+  refOpacity:     { key: 'refOpacity',     suffix: '%',  toState: v => parseInt(v),       toSlider: s => s,          toDisplay: s => s + '%' },
+  testOpacity:    { key: 'testOpacity',    suffix: '%',  toState: v => parseInt(v),       toSlider: s => s,          toDisplay: s => s + '%' },
+};
+
+// Called when a slider moves
+function syncFromSlider(id) {
+  const cfg = CONTROL_MAP[id];
+  const slider = document.getElementById(id);
+  const input  = document.getElementById(id + 'Val');
+  if (id === 'lineHeight') {
+    state[cfg.key] = parseInt(slider.value) / 100;
+  } else {
+    state[cfg.key] = parseInt(slider.value);
+  }
+  input.value = cfg.toDisplay(state[cfg.key]);
+  if (id === 'refOpacity' || id === 'testOpacity') {
+    updateOverlayColors();
+  } else {
+    updateProof();
+  }
+}
+
+// Called on focus: strip suffix so user sees raw number
+function editStart(input, sliderId, suffix) {
+  const cfg = CONTROL_MAP[sliderId];
+  input.value = String(state[cfg.key]);
+  input.select();
+}
+
+// Called on blur or Enter: parse, clamp, commit
+function editCommit(input, sliderId, suffix, min, max) {
+  const cfg = CONTROL_MAP[sliderId];
+  let raw = parseFloat(input.value);
+  if (isNaN(raw)) raw = state[cfg.key]; // revert if garbage
+  raw = Math.max(min, Math.min(max, raw));
+  state[cfg.key] = (sliderId === 'lineHeight') ? raw : Math.round(raw);
+  // Sync slider
+  document.getElementById(sliderId).value = cfg.toSlider(state[cfg.key]);
+  // Restore display format
+  input.value = cfg.toDisplay(state[cfg.key]);
+  if (sliderId === 'refOpacity' || sliderId === 'testOpacity') {
+    updateOverlayColors();
+  } else {
+    updateProof();
+  }
+}
+
+// Enter commits, Escape reverts
+function editKey(e, input, sliderId, suffix, min, max) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    editCommit(input, sliderId, suffix, min, max);
+    input.blur();
+  } else if (e.key === 'Escape') {
+    const cfg = CONTROL_MAP[sliderId];
+    input.value = cfg.toDisplay(state[cfg.key]);
+    input.blur();
+  }
+}
+
+function updateOverlayColors() {
+  state.refColor = document.getElementById('refColor').value;
+  state.testColor = document.getElementById('testColor').value;
+  
+  document.getElementById('refColorSwatch').style.background = state.refColor;
+  document.getElementById('testColorSwatch').style.background = state.testColor;
+  
+  updateProof();
+}
+
+function toggleDiff() {
+  state.diffBlend = !state.diffBlend;
+  document.getElementById('diffToggle').classList.toggle('active', state.diffBlend);
+  updateProof();
+}
+
+function toggleDarkProof() {
+  state.darkProof = !state.darkProof;
+  updateProof();
+}
+
+function toggleOT(feature) {
+  state.otFeatures[feature] = !state.otFeatures[feature];
+  document.getElementById(feature + 'Toggle').classList.toggle('active', state.otFeatures[feature]);
+  updateProof();
+}
+
+function changeSample() {
+  const sel = document.getElementById('sampleSelect').value;
+  state.sampleType = sel;
+  document.getElementById('customText').style.display = sel === 'custom' ? 'block' : 'none';
+  updateProof();
+}
+
+function quickPreset(btn) {
+  document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  state.sampleType = btn.dataset.sample;
+  document.getElementById('sampleSelect').value = SAMPLES[btn.dataset.sample] ? btn.dataset.sample : 'pangram';
+  updateProof();
+}
+
+function getSampleText() {
+  if (state.sampleType === 'custom') return state.customText || document.getElementById('customText').value || 'Type your proofing text here...';
+  return SAMPLES[state.sampleType] || SAMPLES.pangram;
+}
+
+function getFontFeatureCSS() {
+  const feats = [];
+  for (const [k, v] of Object.entries(state.otFeatures)) {
+    feats.push(`'${k}' ${v ? 1 : 0}`);
+  }
+  return feats.join(', ');
+}
+
+function getProofStyle(fontFamily) {
+  return `font-family: '${fontFamily}', serif; font-size: ${state.fontSize}px; line-height: ${state.lineHeight}; letter-spacing: ${state.letterSpacing / 1000}em; font-feature-settings: ${getFontFeatureCSS()};`;
+}
+
+// ─── TAB SWITCHING ───
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    state.tab = tab.dataset.tab;
+    
+    document.getElementById('overlayControls').style.display = state.tab === 'overlay' ? 'block' : 'none';
+    updateProof();
+  });
+});
+
+// ─── RENDERING ───
+function updateProof() {
+  const container = document.getElementById('viewContainer');
+  const refFont = state.refFont || 'serif';
+  const testFont = state.testFont || 'serif';
+  const text = getSampleText();
+  
+  // Update print metadata
+  document.getElementById('printMeta').textContent = `Reference: ${state.refFontName || '—'}  ·  Test: ${state.testFontName || '—'}  ·  ${state.fontSize}px / ${state.lineHeight}`;
+  document.getElementById('printDate').textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  
+  if (!state.refFont && !state.testFont) {
+    container.innerHTML = `
+      <div class="empty-state fade-in">
+        <div class="empty-icon">◉</div>
+        <p class="hint">Load your fonts to begin proofing</p>
+        <p>Drop a reference font and your test font into the sidebar loaders to start comparing metrics, spacing, and character shapes.</p>
+      </div>`;
+    return;
+  }
+  
+  switch (state.tab) {
+    case 'paragraph': renderParagraph(container, refFont, testFont, text); break;
+    case 'characters': renderCharacters(container, refFont, testFont); break;
+    case 'overlay': renderOverlay(container, refFont, testFont, text); break;
+    case 'waterfall': renderWaterfall(container, refFont, testFont); break;
+    case 'spacing': renderSpacing(container, refFont, testFont); break;
+    case 'metrics': renderMetrics(container, refFont, testFont); break;
+  }
+}
+
+function renderParagraph(container, refFont, testFont, text) {
+  const darkClass = state.darkProof ? 'dark-bg' : '';
+  container.innerHTML = `
+    <div class="view-header">
+      <div>
+        <div class="view-title">Paragraph Comparison</div>
+        <div class="view-subtitle">Side-by-side reading at ${state.fontSize}px / ${state.lineHeight} leading · Click text to edit</div>
+      </div>
+    </div>
+    <div class="proof-split fade-in">
+      <div class="proof-pane ${darkClass}">
+        <div class="proof-pane-label">Reference — ${state.refFontName || 'System Serif'}</div>
+        <div class="proof-text" style="${getProofStyle(refFont)}; white-space: pre-wrap;"
+          contenteditable="plaintext-only" data-proof-editable="paragraph"
+          data-placeholder="Type or paste your proofing text here...">${escHtml(text)}</div>
+      </div>
+      <div class="proof-pane ${darkClass}">
+        <div class="proof-pane-label">Test — ${state.testFontName || 'System Serif'}</div>
+        <div class="proof-text" style="${getProofStyle(testFont)}; white-space: pre-wrap;"
+          contenteditable="plaintext-only" data-proof-editable="paragraph"
+          data-placeholder="Type or paste your proofing text here...">${escHtml(text)}</div>
+      </div>
+    </div>`;
+}
+
+function renderCharacters(container, refFont, testFont) {
+  let html = `
+    <div class="view-header">
+      <div>
+        <div class="view-title">Character Set</div>
+        <div class="view-subtitle">Hover to see reference glyph overlay</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span class="control-label" style="font-size:10px">Showing:</span>
+        <span style="color:var(--accent);font-size:10px;font-weight:600">${state.testFontName || 'Test'}</span>
+        <span class="control-label" style="font-size:10px;margin-left:4px">Hover overlay:</span>
+        <span style="color:var(--blue);font-size:10px;font-weight:600">${state.refFontName || 'Reference'}</span>
+      </div>
+    </div>
+    <div class="char-grid fade-in">`;
+  
+  CHAR_RANGES.forEach(range => {
+    html += `<div class="char-section-header">${range.label}</div>`;
+    if (range.chars) {
+      for (const ch of range.chars) {
+        html += charCell(ch, refFont, testFont);
+      }
+    } else {
+      for (let i = range.start; i <= range.end; i++) {
+        html += charCell(String.fromCharCode(i), refFont, testFont);
+      }
+    }
+  });
+  
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function charCell(ch, refFont, testFont) {
+  const code = ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0');
+  return `
+    <div class="char-cell">
+      <div class="char-glyph" style="font-family:'${testFont}',serif">${escHtml(ch)}</div>
+      <div class="char-glyph char-glyph-ref" style="font-family:'${refFont}',serif;font-size:28px;color:var(--blue)">${escHtml(ch)}</div>
+      <div class="char-code">U+${code}</div>
+    </div>`;
+}
+
+function renderOverlay(container, refFont, testFont, text) {
+  const baseStyle = `font-size:${state.fontSize}px; line-height:${state.lineHeight}; letter-spacing:${state.letterSpacing/1000}em; font-feature-settings:${getFontFeatureCSS()};`;
+  const refStyle = `font-family:'${refFont}',serif; ${baseStyle} color:${state.refColor}; opacity:${state.refOpacity/100};`;
+  const testStyle = `font-family:'${testFont}',serif; ${baseStyle} color:${state.testColor}; opacity:${state.testOpacity/100};`;
+  const blendCSS = state.diffBlend ? 'mix-blend-mode: difference;' : '';
+  
+  container.innerHTML = `
+    <div class="view-header">
+      <div>
+        <div class="view-title">Overlay Comparison</div>
+        <div class="view-subtitle">
+          <span style="color:${state.refColor}">■</span> Reference at ${state.refOpacity}%
+          &nbsp;·&nbsp;
+          <span style="color:${state.testColor}">■</span> Test at ${state.testOpacity}%
+          ${state.diffBlend ? '&nbsp;·&nbsp;Difference blend active' : ''}
+          &nbsp;·&nbsp;Click text to edit
+        </div>
+      </div>
+    </div>
+    <div class="overlay-container fade-in" ${state.darkProof ? 'style="background:#111"' : ''}>
+      <div class="overlay-static" style="${baseStyle} white-space:pre-wrap;">${escHtml(text)}</div>
+      <div class="overlay-layer overlay-layer-ref" style="${refStyle} white-space:pre-wrap;" data-proof-mirror="overlay">${escHtml(text)}</div>
+      <div class="overlay-layer overlay-layer-test" style="${testStyle} ${blendCSS} white-space:pre-wrap;"
+        contenteditable="plaintext-only" data-proof-editable="overlay"
+        data-placeholder="Type or paste your proofing text here...">${escHtml(text)}</div>
+    </div>`;
+}
+
+function renderWaterfall(container, refFont, testFont) {
+  const wt = state.waterfallText;
+  let html = `
+    <div class="view-header">
+      <div>
+        <div class="view-title">Waterfall</div>
+        <div class="view-subtitle">Size comparison from 8px to 96px · Click any cell to edit</div>
+      </div>
+    </div>
+    <div class="fade-in">`;
+  
+  WATERFALL_SIZES.forEach(size => {
+    const style = `font-size:${size}px; line-height:1.3; letter-spacing:${state.letterSpacing/1000}em; font-feature-settings:${getFontFeatureCSS()};`;
+    html += `
+      <div class="waterfall-row">
+        <div class="waterfall-size">${size}px</div>
+        <div class="waterfall-cell" style="font-family:'${refFont}',serif;${style}"
+          contenteditable="plaintext-only" data-proof-editable="waterfall">${escHtml(wt)}</div>
+        <div class="waterfall-cell" style="font-family:'${testFont}',serif;${style}"
+          contenteditable="plaintext-only" data-proof-editable="waterfall">${escHtml(wt)}</div>
+      </div>`;
+  });
+  
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function renderSpacing(container, refFont, testFont) {
+  let html = `
+    <div class="view-header">
+      <div>
+        <div class="view-title">Spacing &amp; Kerning Pairs</div>
+        <div class="view-subtitle">Top: Test font · Bottom: Reference font · Click any pair to edit</div>
+      </div>
+    </div>
+    <div class="kern-pair-grid fade-in">`;
+  
+  KERN_PAIRS.forEach(pair => {
+    html += `
+      <div class="kern-pair-cell">
+        <div class="kern-pair-text" style="font-family:'${testFont}',serif;font-feature-settings:${getFontFeatureCSS()}"
+          contenteditable="plaintext-only" data-proof-editable="kern">${escHtml(pair)}</div>
+        <div class="kern-pair-text" style="font-family:'${refFont}',serif;font-feature-settings:${getFontFeatureCSS()};opacity:0.35;margin-top:2px"
+          data-proof-mirror="kern">${escHtml(pair)}</div>
+        <div class="kern-pair-label">${escHtml(pair)}</div>
+      </div>`;
+  });
+  
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function renderMetrics(container, refFont, testFont) {
+  container.innerHTML = `
+    <div class="view-header">
+      <div>
+        <div class="view-title">Vertical Metrics</div>
+        <div class="view-subtitle">Visual alignment comparison of key metric zones</div>
+      </div>
+    </div>
+    <div class="fade-in">
+      <div class="metrics-canvas-wrap">
+        <canvas id="metricsCanvas" width="1200" height="500"></canvas>
+      </div>
+    </div>`;
+  
+  requestAnimationFrame(() => drawMetrics(refFont, testFont));
+}
+
+function drawMetrics(refFont, testFont) {
+  const canvas = document.getElementById('metricsCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  
+  ctx.clearRect(0, 0, W, H);
+  
+  const fontSize = 200;
+  const testStr = 'HxpdÅg';
+  const baseline = 340;
+  
+  // Draw metric lines
+  const lines = [
+    { y: baseline - fontSize * 0.72, label: 'Cap Height', color: '#6c8ec833' },
+    { y: baseline - fontSize * 0.82, label: 'Ascender', color: '#c8956c33' },
+    { y: baseline - fontSize * 0.50, label: 'x-Height', color: '#6cc88e33' },
+    { y: baseline, label: 'Baseline', color: '#55555c66' },
+    { y: baseline + fontSize * 0.22, label: 'Descender', color: '#c86c6c33' },
+  ];
+  
+  lines.forEach(line => {
+    ctx.strokeStyle = line.color;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(60, line.y);
+    ctx.lineTo(W - 20, line.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    ctx.fillStyle = '#78787e';
+    ctx.font = '11px "Spline Sans Mono"';
+    ctx.textAlign = 'right';
+    ctx.fillText(line.label, 56, line.y + 4);
+  });
+  
+  // Draw reference
+  ctx.fillStyle = '#2563eb55';
+  ctx.font = `${fontSize}px "${refFont}"`;
+  ctx.textAlign = 'left';
+  ctx.fillText(testStr, 70, baseline);
+  
+  // Draw test
+  ctx.fillStyle = '#dc262688';
+  ctx.font = `${fontSize}px "${testFont}"`;
+  ctx.fillText(testStr, 70, baseline);
+  
+  // Legend
+  ctx.font = '12px "Spline Sans Mono"';
+  ctx.fillStyle = '#2563eb';
+  ctx.fillText('■ Reference', W - 240, 30);
+  ctx.fillStyle = '#dc2626';
+  ctx.fillText('■ Test', W - 120, 30);
+}
+
+// ─── PDF EXPORT ───
+function exportPDF() {
+  // Update print metadata before printing
+  document.getElementById('printMeta').textContent = `Reference: ${state.refFontName || '—'}  |  Test: ${state.testFontName || '—'}  |  ${state.fontSize}px / ${state.lineHeight} leading  |  Tracking: ${state.letterSpacing}`;
+  document.getElementById('printDate').textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  
+  window.print();
+}
+
+// ─── UTILITIES ───
+function escHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ─── EDITABLE PROOF AREAS ───
+// Delegated input handler: sync edited text to state and sibling elements
+document.getElementById('mainContent').addEventListener('input', function(e) {
+  const el = e.target.closest('[data-proof-editable]');
+  if (!el) return;
+  
+  const kind = el.getAttribute('data-proof-editable');
+  const text = el.innerText;
+  
+  if (kind === 'paragraph' || kind === 'overlay') {
+    // Save to custom text state
+    state.customText = text;
+    state.sampleType = 'custom';
+    document.getElementById('sampleSelect').value = 'custom';
+    document.getElementById('customText').style.display = 'block';
+    document.getElementById('customText').value = text;
+    document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+    
+    // Sync to sibling proof-editable elements of same kind (e.g. the other paragraph pane)
+    const container = document.getElementById('viewContainer');
+    container.querySelectorAll(`[data-proof-editable="${kind}"]`).forEach(sibling => {
+      if (sibling !== el) sibling.innerText = text;
+    });
+    
+    // Sync overlay mirrors (ref layer + static sizing layer)
+    if (kind === 'overlay') {
+      container.querySelectorAll('[data-proof-mirror="overlay"]').forEach(m => m.innerText = text);
+      const ghost = container.querySelector('.overlay-static');
+      if (ghost) ghost.innerText = text;
+    }
+  }
+  
+  else if (kind === 'waterfall') {
+    state.waterfallText = text;
+    // Sync all waterfall cells to the same text
+    const container = document.getElementById('viewContainer');
+    container.querySelectorAll('[data-proof-editable="waterfall"]').forEach(sibling => {
+      if (sibling !== el) sibling.innerText = text;
+    });
+  }
+  
+  else if (kind === 'kern') {
+    // Sync the reference mirror within the same cell
+    const cell = el.closest('.kern-pair-cell');
+    if (cell) {
+      const mirror = cell.querySelector('[data-proof-mirror="kern"]');
+      if (mirror) mirror.innerText = text;
+    }
+  }
+});
+
+// Fallback paste handler for browsers that don't support plaintext-only
+document.getElementById('mainContent').addEventListener('paste', function(e) {
+  const el = e.target.closest('[data-proof-editable]');
+  if (!el) return;
+  
+  // If the browser supports plaintext-only, it handles this already
+  if (el.contentEditable === 'plaintext-only') return;
+  
+  e.preventDefault();
+  const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+  document.execCommand('insertText', false, text);
+});
+
+// Also sync when the sidebar custom textarea is edited manually
+document.getElementById('customText').addEventListener('input', function() {
+  state.customText = this.value;
+  state.sampleType = 'custom';
+  // Re-render to push text into proof areas
+  updateProof();
+});
+
+// ─── INIT ───
+updateProof();
+</script>
+</body>
+</html>
