@@ -485,11 +485,13 @@ select:focus { border-color: var(--accent); }
   line-height: 1.2;
 }
 
+/* Both glyphs in one grid cell, baseline-aligned and starting at the same x: the hover
+   overlay compares shapes from a shared origin, so an identical font coincides. Centring
+   the reference on the whole cell (U+ label included) put it about 8px low. */
+.char-stack { display: grid; align-items: baseline; justify-items: start; }
+.char-stack > .char-glyph { grid-area: 1 / 1; }
+
 .char-glyph-ref {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   opacity: 0;
   transition: opacity 0.2s;
   pointer-events: none;
@@ -521,6 +523,9 @@ select:focus { border-color: var(--accent); }
 /* ─── OVERLAY ─── */
 .overlay-container {
   position: relative;
+  display: grid;
+  align-items: start;
+  isolation: isolate;
   background: white;
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -528,10 +533,14 @@ select:focus { border-color: var(--accent); }
   min-height: 500px;
 }
 
+/* All three layers sit in one grid cell. Off, each face starts at its own line-top, which
+   shows how the vertical metrics differ. Baselines on: the cell aligns their first
+   baselines, and as both set the same numeric line-height, every later line follows. */
+.overlay-container.baseline { align-items: baseline; }
+
 .overlay-layer {
-  position: absolute;
-  inset: 0;
-  padding: 40px;
+  grid-area: 1 / 1;
+  position: relative;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
@@ -545,6 +554,7 @@ select:focus { border-color: var(--accent); }
 }
 
 .overlay-static {
+  grid-area: 1 / 1;
   position: relative;
   z-index: 0;
   visibility: hidden;
@@ -963,23 +973,23 @@ select:focus { border-color: var(--accent); }
     <div class="sidebar-section" id="overlayControls" style="display:none">
       <div class="section-label">Overlay Settings</div>
       <div class="color-row">
-        <div class="color-swatch" id="refColorSwatch" style="background:#2563eb">
-          <input type="color" id="refColor" value="#2563eb" oninput="updateOverlayColors()">
+        <div class="color-swatch" id="refColorSwatch" style="background:#004eff">
+          <input type="color" id="refColor" value="#004eff" oninput="updateOverlayColors(true)">
         </div>
         <span class="control-label" style="flex:1">Reference</span>
-        <input type="range" id="refOpacity" min="0" max="100" value="50" style="width:80px" oninput="syncFromSlider('refOpacity')">
-        <input type="text" class="control-value" id="refOpacityVal" value="50%" style="width:42px"
+        <input type="range" id="refOpacity" min="0" max="100" value="100" style="width:80px" oninput="syncFromSlider('refOpacity')">
+        <input type="text" class="control-value" id="refOpacityVal" value="100%" style="width:42px"
           onfocus="editStart(this,'refOpacity','%')"
           onblur="editCommit(this,'refOpacity','%',0,100)"
           onkeydown="editKey(event,this,'refOpacity','%',0,100)">
       </div>
       <div class="color-row">
-        <div class="color-swatch" id="testColorSwatch" style="background:#dc2626">
-          <input type="color" id="testColor" value="#dc2626" oninput="updateOverlayColors()">
+        <div class="color-swatch" id="testColorSwatch" style="background:#ff5700">
+          <input type="color" id="testColor" value="#ff5700" oninput="updateOverlayColors(true)">
         </div>
         <span class="control-label" style="flex:1">Test</span>
-        <input type="range" id="testOpacity" min="0" max="100" value="50" style="width:80px" oninput="syncFromSlider('testOpacity')">
-        <input type="text" class="control-value" id="testOpacityVal" value="50%" style="width:42px"
+        <input type="range" id="testOpacity" min="0" max="100" value="100" style="width:80px" oninput="syncFromSlider('testOpacity')">
+        <input type="text" class="control-value" id="testOpacityVal" value="100%" style="width:42px"
           onfocus="editStart(this,'testOpacity','%')"
           onblur="editCommit(this,'testOpacity','%',0,100)"
           onkeydown="editKey(event,this,'testOpacity','%',0,100)">
@@ -987,6 +997,10 @@ select:focus { border-color: var(--accent); }
       <div class="toggle-row" style="margin-top:8px">
         <span class="control-label">Difference blend</span>
         <button class="toggle" id="diffToggle" onclick="toggleDiff()"></button>
+      </div>
+      <div class="toggle-row">
+        <span class="control-label">Align baselines</span>
+        <button class="toggle active" id="baselineToggle" onclick="toggleBaselines()"></button>
       </div>
     </div>
 
@@ -1060,17 +1074,32 @@ const state = {
   fontSize: 18,
   lineHeight: 1.4,
   letterSpacing: 0,
-  refColor: '#2563eb',
-  testColor: '#dc2626',
-  refOpacity: 50,
-  testOpacity: 50,
+  refColor: null,    // null: the default ink for the proof background (see INKS)
+  testColor: null,
+  refOpacity: 100,
+  testOpacity: 100,
   diffBlend: false,
+  alignBaselines: true,
   darkProof: false,
   otFeatures: { liga: true, kern: true, onum: false, tnum: false, smcp: false },
   sampleType: 'pangram',
   customText: '',
   waterfallText: 'Hamburgefonstiv 0123456789',
 };
+
+/* Default overlay inks, blue against orange (the blue-yellow axis survives the common
+   color-blindnesses), with the blend that makes agreement neutral. On the dark proof the
+   test layer is added (plus-lighter): these two are near-complements, so where the faces
+   agree the overlap sums to white. On white it multiplies, which is only neutral when both
+   inks are low in green -- so the light pair is a deeper blue and a redder orange, and
+   agreement goes near-black. Both need 100% opacity to reach the extreme. */
+const INKS = {
+  light: { ref: '#004eff', test: '#ff5700', blend: 'multiply' },
+  dark:  { ref: '#249bff', test: '#ffa300', blend: 'plus-lighter' },
+};
+const inks = () => INKS[state.darkProof ? 'dark' : 'light'];
+const refInk = () => state.refColor || inks().ref;
+const testInk = () => state.testColor || inks().test;
 
 const SAMPLES = {
   pangram: `The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump! The five boxing wizards jump quickly. Sphinx of black quartz, judge my vow. Two driven jocks help fax my big quiz. The jay, pig, fox, zebra and my wolves quack! Crazy Frederick bought many very exquisite opal jewels.
@@ -1262,12 +1291,17 @@ function editKey(e, input, sliderId, suffix, min, max) {
   }
 }
 
-function updateOverlayColors() {
-  state.refColor = document.getElementById('refColor').value;
-  state.testColor = document.getElementById('testColor').value;
-  
-  document.getElementById('refColorSwatch').style.background = state.refColor;
-  document.getElementById('testColorSwatch').style.background = state.testColor;
+// fromPicker: a color input moved, so its value becomes this ink. Otherwise (opacity, proof
+// background) an ink nobody picked keeps following the default for the background.
+function updateOverlayColors(fromPicker) {
+  if (fromPicker) {
+    state.refColor = document.getElementById('refColor').value;
+    state.testColor = document.getElementById('testColor').value;
+  }
+  document.getElementById('refColor').value = refInk();
+  document.getElementById('testColor').value = testInk();
+  document.getElementById('refColorSwatch').style.background = refInk();
+  document.getElementById('testColorSwatch').style.background = testInk();
   
   updateProof();
 }
@@ -1278,9 +1312,15 @@ function toggleDiff() {
   updateProof();
 }
 
+function toggleBaselines() {
+  state.alignBaselines = !state.alignBaselines;
+  document.getElementById('baselineToggle').classList.toggle('active', state.alignBaselines);
+  updateProof();
+}
+
 function toggleDarkProof() {
   state.darkProof = !state.darkProof;
-  updateProof();
+  updateOverlayColors();
 }
 
 function toggleOT(feature) {
@@ -1426,32 +1466,35 @@ function charCell(ch, refFont, testFont) {
   const code = ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0');
   return `
     <div class="char-cell">
-      <div class="char-glyph" style="font-family:'${testFont}',serif">${escHtml(ch)}</div>
-      <div class="char-glyph char-glyph-ref" style="font-family:'${refFont}',serif;font-size:28px;color:var(--blue)">${escHtml(ch)}</div>
+      <div class="char-stack">
+        <div class="char-glyph" style="font-family:'${testFont}',serif">${escHtml(ch)}</div>
+        <div class="char-glyph char-glyph-ref" style="font-family:'${refFont}',serif;font-size:28px;color:var(--blue)">${escHtml(ch)}</div>
+      </div>
       <div class="char-code">U+${code}</div>
     </div>`;
 }
 
 function renderOverlay(container, refFont, testFont, text) {
   const baseStyle = `font-size:${state.fontSize}px; line-height:${state.lineHeight}; letter-spacing:${state.letterSpacing/1000}em; font-feature-settings:${getFontFeatureCSS()};`;
-  const refStyle = `font-family:'${refFont}',serif; ${baseStyle} color:${state.refColor}; opacity:${state.refOpacity/100};`;
-  const testStyle = `font-family:'${testFont}',serif; ${baseStyle} color:${state.testColor}; opacity:${state.testOpacity/100};`;
-  const blendCSS = state.diffBlend ? 'mix-blend-mode: difference;' : '';
+  const refStyle = `font-family:'${refFont}',serif; ${baseStyle} color:${refInk()}; opacity:${state.refOpacity/100};`;
+  const testStyle = `font-family:'${testFont}',serif; ${baseStyle} color:${testInk()}; opacity:${state.testOpacity/100};`;
+  const blendCSS = `mix-blend-mode: ${state.diffBlend ? 'difference' : inks().blend};`;
   
   container.innerHTML = `
     <div class="view-header">
       <div>
         <div class="view-title">Overlay Comparison</div>
         <div class="view-subtitle">
-          <span style="color:${state.refColor}">■</span> Reference at ${state.refOpacity}%
+          <span style="color:${refInk()}">■</span> Reference at ${state.refOpacity}%
           &nbsp;·&nbsp;
-          <span style="color:${state.testColor}">■</span> Test at ${state.testOpacity}%
+          <span style="color:${testInk()}">■</span> Test at ${state.testOpacity}%
           ${state.diffBlend ? '&nbsp;·&nbsp;Difference blend active' : ''}
+          &nbsp;·&nbsp;${state.alignBaselines ? 'Baselines aligned' : 'Line-tops aligned'}
           &nbsp;·&nbsp;Click text to edit
         </div>
       </div>
     </div>
-    <div class="overlay-container fade-in" ${state.darkProof ? 'style="background:#111"' : ''}>
+    <div class="overlay-container fade-in${state.alignBaselines ? ' baseline' : ''}" ${state.darkProof ? 'style="background:#111"' : ''}>
       <div class="overlay-static" style="${baseStyle} white-space:pre-wrap;">${escHtml(text)}</div>
       <div class="overlay-layer overlay-layer-ref" style="${refStyle} white-space:pre-wrap;" data-proof-mirror="overlay">${escHtml(text)}</div>
       <div class="overlay-layer overlay-layer-test" style="${testStyle} ${blendCSS} white-space:pre-wrap;"
